@@ -18,7 +18,7 @@ import random
 import requests
 
 def start_game():
-    player = 0
+    player = 1
     while True:
         move = random.randint(1,10)
         #make move
@@ -33,7 +33,7 @@ def start_game():
         
         
         time.sleep(2)
-        player = player ^ 1
+        #player = player ^ 1
         
         
 

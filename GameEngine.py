@@ -9,7 +9,7 @@ Created on Sun Jun 21 20:09:07 2020
 TARGET = 4
 
 class RowGame: 
-    def __init__( self, x, y, players):
+    def __init__( self, x, y, players, state = None):
         '''
         board is represented by a n * n matrix, where the it is stored graphically
         
@@ -23,14 +23,17 @@ class RowGame:
         
         self.rows = x
         self.columns = y
-        self.state = [[-1 for _ in range( self.columns )] for _ in range( self.rows ) ] 
+        if state is not None:
+            self.state = state
+        else:
+            self.state = [[-1 for _ in range( self.columns )] for _ in range( self.rows ) ] 
         self.roundNumber = 0 
         self.nextPlayer = 0
         self.players = players
         self.rounds = []
         self.game_won =False
         self.winner = None
-
+        self.nextMoveNumber = 1
         
     def getGameHistory( self ):
         return self.rounds
@@ -48,16 +51,25 @@ class RowGame:
     def getWinner( self ):
         return self.winner
     
+    def getNextMoveNumber( self ):
+        return self.nextMoveNumber
+    
     def resetGame( self, x, y, players ):
         self.__init__( x, y, players)
         
     def checkFinished( self ):
         return (self.game_won, self.winner) 
         
-        
     
     def _validateMove( self, col_num ):
+        #test code starts here:
+        if not  self.state[0][col_num -1] == -1 and self._checkWithinBounds(0, col_num-1):
+            print(self.state)
+            print(col_num)
+        #test code ends here  
         return self.state[0][col_num -1] == -1 and self._checkWithinBounds(0, col_num-1)
+    
+    
     
     def _trickleMove( self, player, col_num):
         row = 0
@@ -66,7 +78,15 @@ class RowGame:
         row-=1
         self.state[row][col_num -1] = player
         return row
-        
+
+    def _unTrickleMove( self, player, col_num):
+        row = 0
+        while(row < self.rows and self.state[row][col_num-1] == -1):
+            row+=1
+        if row != self.rows and self.state[row][col_num -1] == player:
+            self.state[row][col_num -1] = -1
+        return row
+                
         
     def _checkWithinBounds( self, row_num, col_num):
         '''
@@ -78,6 +98,9 @@ class RowGame:
             return False
         return True
     
+    #def _checkIfWon( self, row_num = None, col_num = None ):
+    #    pass
+    
     def _checkIfWon( self, row_num, col_num):
         if self.state[row_num][col_num] == -1:
             return False
@@ -88,8 +111,9 @@ class RowGame:
                 return False
             
             if count == TARGET:
-                self.winner = currentVal
-                self.game_won = True
+                if not self.game_won:
+                    self.winner = currentVal
+                    self.game_won = True
                 return True
             return False
                 
@@ -123,11 +147,13 @@ class RowGame:
         currentVal = self.state[row_num][col_num] 
         count = 1
 
+        # this is the downwards-right movement
         i = 1
         while self._checkWithinBounds(row_num + i, col_num + i) and self.state[row_num + i][col_num + i] == currentVal:
-            count += 1
-            i+=1
+             count += 1
+             i+=1
                         
+        #this is the upwards-left movement
         i = -1
         while self._checkWithinBounds(row_num + i, col_num + i) and self.state[row_num + i][col_num + i] == currentVal:
             count += 1
@@ -141,12 +167,14 @@ class RowGame:
         currentVal = self.state[row_num][col_num] 
         count = 1
 
+        #this is the upwards-right movement
         i = 1
         while self._checkWithinBounds(row_num - i, col_num + i) and self.state[row_num - i][col_num + i] == currentVal:
             count += 1
             i+=1
             
-            
+
+        #this is the downwards-left movement    
         i = -1
         while self._checkWithinBounds(row_num - i, col_num + i) and self.state[row_num - i][col_num + i] == currentVal:
             count += 1
@@ -173,13 +201,18 @@ class RowGame:
             
     
     def registerMove( self, player, col_num):
-        assert self.nextPlayer == player, "Not the player's turn; Expected Player:" + str(self.nextPlayer) + "Player played: " + str(player)
+        '''
+        method for registering a move.
+        Inputs: player <Int> 0,1,...
+                col_num <Int> 1,2...N   
+        '''
+        #assert self.nextPlayer == player, "Not the player's turn; Expected Player:" + str(self.nextPlayer) + "Player played: " + str(player)
         
         assert self._validateMove( col_num ), "Not  Valid move"
         
-        assert not self.game_won, "Game already completed"
+        #assert not self.game_won, "Game already completed"
         
-        row_num = self._trickleMove(  player, col_num)
+        row_num = self._trickleMove(  player, col_num )
         
         self._saveInHistory( player, col_num )
         # change player 
@@ -189,15 +222,17 @@ class RowGame:
         if self.nextPlayer == 0:
             self.roundNumber += 1 
             
-        self._checkIfWon( row_num, col_num)
+        self._checkIfWon( row_num, col_num -1 )
         self._checkIfGameDrawn()
+        self.nextMoveNumber += 1
             
         
     def _saveInHistory( self, player, move_row ):
-        if player == 0:
-            self.rounds.append([move_row])
-        else: 
-            self.rounds[-1].append(move_row)
+        pass
+        #if player == 0:
+        #    self.rounds.append([move_row])
+        #else: 
+        #    self.rounds[-1].append(move_row)
         
 
 '''  

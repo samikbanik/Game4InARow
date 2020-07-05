@@ -11,16 +11,20 @@ from GameEngine import RowGame
 
 class GameEngineTests(unittest.TestCase):
     def setUp( self ):
-        sampleGame = RowGame(5, 5, 2)
+        self.sampleGame = RowGame(6, 5, 2)
         
-        sampleGame.state = [
+        self.sampleGame.state = [
                                 [ -1, -1, -1, -1, -1 ],
                                 [ -1, -1, -1, -1, -1 ],
-                                [ -1, 0, -1, -1, -1 ],
-                                [ -1, 0, -1, -1, -1 ],
-                                [ -1, 0, -1, -1, -1 ],
-                                [ -1, 0, -1, -1, -1 ],
+                                [ -1, -1, -1, -1, 1 ],
+                                [ -1, -1, -1, 1, -1 ],
+                                [ -1, -1, 1, -1, -1 ],
+                                [ -1, 1, -1, -1, -1 ],
                             ]
+    def test__checkIfWon( self ):
+        returnValue = self.sampleGame._checkIfWon(2, 4)
+        
+        self.assertEqual( returnValue, True )
     
 if __name__ == '__main__':
     unittest.main()
